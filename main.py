@@ -1,24 +1,91 @@
-tasks=[{"id":1,"task":"learnpython","status":"In progress"},
-      {"id":2,"task":"task manager project","status":"In progress"}
-      ]
+# tasks=[{"id":1,"task":"learnpython","status":"In progress"},
+#       {"id":2,"task":"task manager project","status":"In progress"}
+#       ]
+import json
 
 # define function
 def add_task(new_task):
+    tasks = load_tasks()
+
+    # If file had a single dict earlier, fix it
+    if isinstance(tasks, dict):
+        tasks = [tasks]
+
     tasks.append(new_task)
 
-#define function
-def view_tasks(tasks):
-    for i in tasks:
-        print(i)
+    with open("tasks.json", "w") as f:
+        json.dump(tasks, f, indent=2)
 
+
+#define function
+def view_tasks():
+    tasks = load_tasks()
+    if not tasks:
+        print("No tasks found.")
+        return
+
+    for task in tasks:
+        print(task)
+
+    
+def load_tasks():
+    try:
+        with open("tasks.json", "r") as f:
+            data = json.load(f)
+            if isinstance(data, dict):
+                return [data] 
+            return data
+    except FileNotFoundError:
+        return []
+
+
+def update_status(id):
+    tasks = load_tasks()
+    found = False
+
+    for task in tasks:
+        if task["id"] == str(id):
+            task["status"] = "done"
+            found = True
+            break
+
+    if not found:
+        print("Task not found")
+        return
+
+    with open("tasks.json", "w") as f:
+        json.dump(tasks, f, indent=2)
+
+def delete_task(id):
+    tasks = load_tasks()
+
+    for i, task in enumerate(tasks):
+        if task["id"]==str(id):
+            tasks.pop(i)
+            break
+    with open("tasks.json", "w") as f:
+        json.dump(tasks, f, indent=2)
+
+    return tasks
+        
 while True:
+    print("---------------------")
     print("1. Add Task")
     print("2. view Tasks")
-    print("3. Exit")
+    print("3. Mark Task as Done")
+    print("4. Delete Task")
+    print("5. Exit")
+    print("---------------------")
 
-    choice=int(input("choose option: "))
+    try:
+        choice=int(input("choose option: "))
+    except ValueError:
+        print("---------------------")
+        print("Please enter a number")
+        continue
     if choice == 1:
-        new_id=input("enter new id: ")
+        # new_id=input("enter new id: ")
+        new_id=input("enter new id:")
         title=input("enter new task: ")
         new_task_status=input("enter task status: ")
         new_task={"id":new_id,"task":title,"status":new_task_status}
@@ -28,9 +95,19 @@ while True:
 
     elif choice == 2:
         print("you task lists: ")
-        view_tasks(tasks)
+        view_tasks()
 
     elif choice == 3:
+        id=int(input("enter task id: "))
+        update_status(id)
+        print("status changed")
+
+    elif choice == 4:
+        id=int(input("enter task id: "))
+        delete_task(id)
+        # print("deleted the task id",+id)
+
+    elif choice == 5:
         print("Thank you!!")
         break
     
